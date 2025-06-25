@@ -1,0 +1,217 @@
+{% extends "admin/layout.html" %}
+{% block title %}Dashboard - E-Looc Admin{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <h1 class="h3 mb-4 text-gray-800">Dashboard</h1>
+
+  <!-- Stats Row -->
+  <div class="row">
+    <div class="col-xl-3 col-md-6 col-sm-6 mb-4">
+      <div class="card dashboard-stat bg-primary text-white">
+        <div class="dashboard-stat-content">
+          <h5>Bulletin Posts</h5>
+          <div class="dashboard-stat-number">{{ bulletin_count }}</div>
+        </div>
+        <div class="dashboard-stat-icon">
+          <i class="fas fa-bullhorn"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 col-sm-6 mb-4">
+      <div class="card dashboard-stat bg-success text-white">
+        <div class="dashboard-stat-content">
+          <h5>News & Events</h5>
+          <div class="dashboard-stat-number">{{ news_count }}</div>
+        </div>
+        <div class="dashboard-stat-icon">
+          <i class="fas fa-newspaper"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Cards Row -->
+  <div class="row">
+    <div class="col-lg-6 col-md-12 mb-4">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Quick Actions</h5>
+          <button class="btn btn-sm btn-link d-md-none" type="button" data-bs-toggle="collapse" data-bs-target="#quickActionsCollapse" aria-expanded="true">
+            <i class="fas fa-chevron-down"></i>
+          </button>
+        </div>
+        <div class="card-body collapse show" id="quickActionsCollapse">
+          <div class="row">
+            <div class="col-md-6 col-sm-12 mb-3">
+              <a href="{{ url_for('admin_create_bulletin') }}" class="btn btn-primary w-100 d-flex align-items-center justify-content-center">
+                <i class="fas fa-plus-circle me-2"></i> Add Bulletin Post
+              </a>
+            </div>
+            <div class="col-md-6 col-sm-12 mb-3">
+              <a href="{{ url_for('admin_create_news') }}" class="btn btn-primary w-100 d-flex align-items-center justify-content-center">
+                <i class="fas fa-plus-circle me-2"></i> Add News Item
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-6 col-md-12 mb-4">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Help & Information</h5>
+          <button class="btn btn-sm btn-link d-md-none" type="button" data-bs-toggle="collapse" data-bs-target="#helpInfoCollapse" aria-expanded="true">
+            <i class="fas fa-chevron-down"></i>
+          </button>
+        </div>
+        <div class="card-body collapse show" id="helpInfoCollapse">
+          <p class="mb-3">
+            <i class="fas fa-info-circle me-2 text-info"></i>
+            Welcome to the E-Looc Barangay Administration Panel. From here, you can manage bulletin board posts and news items that appear on the public website.
+          </p>
+          <hr>
+          <p class="mb-0">
+            <i class="fas fa-question-circle me-2 text-warning"></i>
+            If you need help or have questions, please contact the <a href="https://www.facebook.com/cristiandave.ordonez/" target="_blank"><u>system administrator.</u></a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Notifications Card -->
+<div class="row mt-4">
+  <div class="col-lg-12 mb-4">
+    <div class="card">
+      <div class="card-header">
+        <h2 class="h5 mb-0">
+          Recent Unread Notifications
+          {% if unread_notifications_count > 0 %}
+            <span class="badge bg-danger ms-2">{{ unread_notifications_count }}</span>
+          {% endif %}
+        </h2>
+      </div>
+      <div class="card-body">
+        {% if unread_notifications %}
+          <div class="list-group">
+            {% for notification in unread_notifications %}
+              <div class="list-group-item list-group-item-action flex-column align-items-start mb-2">
+                <div class="d-flex w-100 justify-content-between">
+                  <h5 class="mb-1 text-primary">
+                    <i class="fas fa-bell me-2"></i>New {{ notification.form_type | replace('_', ' ') | title }}
+                  </h5>
+                  <small class="text-muted">{{ notification.created_at | datetimeformat }}</small>
+                </div>
+                <div class="mb-1">
+                  <p><strong>Details:</strong></p>
+                  <ul>
+                    {% for key, value in notification.data.items() %}
+                      {% if key != 'Timestamp' and key != 'secret_key' %} {# Avoid showing internal/redundant fields #}
+                        <li><strong>{{ key | replace('_', ' ') | title }}:</strong>
+                        {% if value is iterable and value is not string %}
+                            {{ value[0] if value else '' }}
+                        {% else %}
+                            {{ value }}
+                        {% endif %}
+                        </li>
+                      {% endif %}
+                    {% endfor %}
+                  </ul>
+                </div>
+                <div class="d-flex justify-content-end">
+                    <form action="{{ url_for('mark_notification_as_read', notification_id=notification.id) }}" method="POST" class="d-inline">
+                        <button type="submit" class="btn btn-sm btn-success">
+                            <i class="fas fa-check me-1"></i> Mark as Read
+                        </button>
+                    </form>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-muted">No new unread notifications.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Patch Notes and Maintenance Row -->
+<div class="row mt-4">
+  <!-- System Maintenance Card -->
+  <div class="col-lg-12 mb-4">
+    <div class="card">
+      <div class="card-header">
+        <h2 class="h5 mb-0">System Maintenance</h2>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+          {% if system_maintenance %}
+          <table class="table table-sm table-striped table-hover">
+            <thead class="table-light">
+              <tr>
+                <th>Title</th>
+                <th>Message</th>
+                <th>Start Time</th>
+                <th>End Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in system_maintenance %}
+              <tr>
+                <td>{{ item.title }}</td>
+                <td><pre style="white-space: pre-wrap; word-break: break-word; margin-bottom: 0;">{{ item.message }}</pre></td>
+                <td>{{ item.start_time | datetimeformat }}</td>
+                <td>{{ item.end_time | datetimeformat }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+          <p class="text-muted">No system maintenance messages available.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Patch Notes Card -->
+  <div class="col-lg-12 mb-4">
+    <div class="card">
+      <div class="card-header">
+        <h2 class="h5 mb-0">Patch Notes</h2>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+          {% if patch_notes %}
+          <table class="table table-sm table-striped table-hover">
+            <thead class="table-light">
+              <tr>
+                <th>Version</th>
+                <th>Description</th>
+                <th>Date Implemented</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for note in patch_notes %}
+              <tr>
+                <td>{{ note.version }}</td>
+                <td><pre style="white-space: pre-wrap; word-break: break-word; margin-bottom: 0;">{{ note.notes }}</pre></td>
+                <td>{{ note.date | datetimeformat }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+          <p class="text-muted">No patch notes available.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

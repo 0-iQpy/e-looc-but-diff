@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}E-Looc Admin{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #0a2472;
+      --secondary-color: #0e6ba8;
+      --accent-color: #00b2ca;
+      --light-color: #f0f8ff;
+      --dark-color: #001845;
+    }
+
+    body {
+      overflow-x: hidden;
+    }
+
+    .sidebar {
+      background-color: var(--primary-color);
+      min-height: 100vh;
+      color: white;
+      transition: all 0.3s ease;
+      z-index: 1000;
+    }
+
+    .sidebar .nav-link {
+      color: rgba(255, 255, 255, 0.8);
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      transition: all 0.2s ease;
+    }
+
+    .sidebar .nav-link:hover,
+    .sidebar .nav-link.active {
+      color: white;
+      background-color: rgba(255, 255, 255, 0.1);
+      border-left: 4px solid var(--accent-color);
+    }
+
+    .sidebar-heading {
+      padding: 1rem;
+      font-weight: bold;
+      color: white;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+    }
+
+    .sidebar-heading i {
+      margin-right: 10px;
+    }
+
+    .content-wrapper {
+      padding: 1.5rem;
+      transition: margin-left 0.3s ease;
+    }
+
+    .navbar {
+      background-color: white;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      padding: 0.75rem 1rem;
+      z-index: 100;
+    }
+
+    .btn-primary {
+      background-color: var(--secondary-color);
+      border-color: var(--secondary-color);
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-color);
+      border-color: var(--primary-color);
+    }
+
+    .card {
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      border: none;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      height: 100%;
+    }
+
+    .card-header {
+      background-color: var(--light-color);
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .table {
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    /* Dashboard Stats Styling */
+    .dashboard-stat {
+      padding: 1.5rem;
+      border-radius: 8px;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+      min-height: 120px;
+    }
+
+    .dashboard-stat-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .dashboard-stat-number {
+      font-size: 2.5rem;
+      font-weight: bold;
+    }
+
+    .dashboard-stat-icon {
+      position: absolute;
+      right: 1rem;
+      font-size: 3rem;
+      opacity: 0.3;
+      z-index: 1;
+    }
+
+    .dashboard-stat.bg-primary {
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    }
+
+    .dashboard-stat.bg-success {
+      background: linear-gradient(135deg, #2e7d32, #43a047);
+    }
+
+    .user-dropdown {
+      margin-left: auto;
+    }
+
+    /* Mobile Sidebar Toggle */
+    .sidebar-toggle {
+      display: none;
+      background: transparent;
+      border: none;
+      color: var(--dark-color);
+      font-size: 1.25rem;
+    }
+
+    /* Create a backdrop for mobile sidebar */
+    .sidebar-backdrop {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+    }
+
+    /* Forms and Inputs */
+    .form-control:focus {
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 0.25rem rgba(0, 178, 202, 0.25);
+    }
+
+    /* Alert styling */
+    .alert {
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+    }
+
+    /* Responsive media queries */
+    @media (max-width: 991.98px) {
+      .sidebar {
+        position: fixed;
+        left: -260px;
+        width: 260px;
+      }
+
+      .sidebar.show {
+        left: 0;
+      }
+
+      .sidebar-backdrop.show {
+        display: block;
+      }
+
+      .sidebar-toggle {
+        display: block;
+      }
+
+      .content-wrapper {
+        margin-left: 0 !important;
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 767.98px) {
+      .dashboard-stat {
+        padding: 1rem;
+      }
+
+      .dashboard-stat-number {
+        font-size: 2rem;
+      }
+
+      .dashboard-stat-icon {
+        font-size: 2.5rem;
+      }
+
+      .card-header {
+        padding: 0.75rem 1rem;
+      }
+
+      .content-wrapper {
+        padding: 1rem;
+      }
+
+      .card-body {
+        padding: 1rem;
+      }
+    }
+
+    @media (min-width: 992px) {
+      .content-wrapper {
+        margin-left: 0;
+      }
+    }
+    /* Styles for the pop-up container */
+        .admin-popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent black overlay */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000; /* High z-index to ensure it's on top */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .admin-popup-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .admin-popup-content {
+            background-color: #fff;
+            padding: 25px;
+            border-radius: 8px; /* Consistent border radius */
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 500px; /* Max width for the pop-up */
+            max-height: 80vh; /* Max height */
+            overflow-y: auto; /* Scroll if content is too long */
+            position: relative;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .admin-popup-overlay.visible .admin-popup-content {
+            transform: scale(1);
+        }
+
+        .admin-popup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .admin-popup-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: #333; /* Dark text for title */
+        }
+
+        .admin-popup-close {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            color: #777;
+            cursor: pointer;
+            padding: 5px;
+            line-height: 1;
+        }
+        .admin-popup-close:hover {
+            color: #333;
+        }
+
+        .admin-popup-body {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #555; /* Standard text color */
+        }
+
+        .admin-popup-body ul {
+            list-style-type: disc;
+            padding-left: 20px;
+            margin-top: 10px;
+        }
+
+        .admin-popup-body li {
+            margin-bottom: 8px;
+        }
+
+        /* Basic button styling for potential actions */
+        .admin-popup-footer {
+            text-align: right;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .admin-popup-button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+        }
+
+        .admin-popup-button.primary {
+            background-color: #0e6ba8; /* Secondary color from main style */
+            color: white;
+        }
+        .admin-popup-button.primary:hover {
+            background-color: #0a2472; /* Primary color from main style */
+        }
+
+        .admin-popup-button.secondary {
+            background-color: #ccc;
+            color: #333;
+            margin-left: 10px;
+        }
+        .admin-popup-button.secondary:hover {
+            background-color: #bbb;
+        }
+  </style>
+  {% block additional_styles %}{% endblock %}
+</head>
+<body>
+  <div class="container-fluid p-0">
+    <div class="row g-0">
+      <!-- Sidebar Backdrop (Mobile Only) -->
+      <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+      <!-- Sidebar -->
+      <div class="col-lg-2 sidebar" id="sidebar">
+        <div class="sidebar-heading">
+          <i class="fas fa-tachometer-alt"></i> E-Looc Admin
+        </div>
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link {% if request.path == '/admin/dashboard' %}active{% endif %}" href="{{ url_for('admin_dashboard') }}">
+              <i class="fas fa-home me-2"></i> Dashboard
+              {% if unread_notifications_global_count > 0 %}
+                <span class="badge bg-danger ms-auto">{{ unread_notifications_global_count }}</span>
+              {% endif %}
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if '/admin/bulletins' in request.path %}active{% endif %}" href="{{ url_for('admin_bulletins') }}">
+              <i class="fas fa-bullhorn me-2"></i> Bulletin Board
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if '/admin/news' in request.path %}active{% endif %}" href="{{ url_for('admin_news') }}">
+              <i class="fas fa-newspaper me-2"></i> News & Events
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('brgy_certificate_requests') }}">
+              <i class="fa-solid fa-envelope-open-text me-2"></i> Certificates Requests
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('business_permit_requests') }}">
+              <i class="fa-solid fa-briefcase me-2"></i> Business Permit Requests
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('reports_and_concerns') }}">
+              <i class="fa-solid fa-flag me-2"></i> Reports and Concerns
+            </a>
+          </li>
+
+          <li class="nav-item mt-3">
+            <a class="nav-link" href="{{ url_for('admin_logout') }}">
+              <i class="fas fa-sign-out-alt me-2"></i> Logout
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Main Content -->
+      <div class="col-lg-10 ms-lg-auto px-0">
+        <!-- Top Navbar -->
+        <nav class="navbar navbar-expand-lg">
+          <div class="container-fluid">
+            <button class="sidebar-toggle" id="sidebarToggle">
+              <i class="fas fa-bars"></i>
+            </button>
+            <div class="d-flex align-items-center">
+              <span class="me-3 d-none d-md-inline">Welcome, {{ current_user.name }}</span>
+            </div>
+            <div class="user-dropdown dropdown">
+              <a class="dropdown-toggle text-decoration-none" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                <i class="fas fa-user-circle me-1"></i> {{ current_user.username }}
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="{{ url_for('index') }}" target="_blank">View Site</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{{ url_for('admin_logout') }}">Logout</a></li>
+              </ul>
+            </div>
+          </div>
+        </nav>
+
+        <!-- Content Area -->
+        <div class="content-wrapper">
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                  {{ message }}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
+
+          {% block content %}{% endblock %}
+        </div>
+      </div>
+    </div>
+  </div>
+<div class="admin-popup-overlay" id="adminUpdatePopupOverlay">
+        <div class="admin-popup-content">
+            <div class="admin-popup-header">
+                <h2 id="adminPopupTitle">Recent Updates</h2>
+                <button class="admin-popup-close" onclick="hideAdminUpdatePopup(false)">&times;</button>
+            </div>
+            <div class="admin-popup-body" id="adminPopupBody">
+                <!-- Update content will be injected here -->
+                <p>Here's what's new in the admin panel:</p>
+                <ul>
+                    <li>Feature X has been updated.</li>
+                    <li>Bug Y has been fixed.</li>
+                    <li>New setting Z is now available.</li>
+                </ul>
+            </div>
+            <div class="admin-popup-footer">
+                <button class="admin-popup-button primary" onclick="hideAdminUpdatePopup(true)">Got it!</button>
+            </div>
+        </div>
+    </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Mobile sidebar toggle functionality
+    // Note: The DOMContentLoaded listener for sidebar functionality is kept separate
+    // from the notification logic for clarity.
+    document.addEventListener('DOMContentLoaded', function() {
+      const sidebar = document.getElementById('sidebar');
+      const sidebarToggle = document.getElementById('sidebarToggle');
+      const sidebarBackdrop = document.getElementById('sidebarBackdrop');
+
+      if (sidebarToggle) { // Ensure elements exist before adding listeners
+        sidebarToggle.addEventListener('click', function() {
+          sidebar.classList.toggle('show');
+          sidebarBackdrop.classList.toggle('show');
+        });
+      }
+
+      if (sidebarBackdrop) {
+        sidebarBackdrop.addEventListener('click', function() {
+          sidebar.classList.remove('show');
+          sidebarBackdrop.classList.remove('show');
+        });
+      }
+
+      window.addEventListener('resize', function() {
+        if (window.innerWidth >= 992) {
+          if (sidebar) sidebar.classList.remove('show');
+          if (sidebarBackdrop) sidebarBackdrop.classList.remove('show');
+        }
+      });
+
+      function updateCardCollapses() {
+        const isMobile = window.innerWidth < 768;
+        const collapsibleCards = document.querySelectorAll('[data-bs-toggle="collapse"].d-md-none');
+        collapsibleCards.forEach(toggle => {
+          const targetId = toggle.getAttribute('data-bs-target');
+          const target = document.querySelector(targetId);
+          if (target) {
+            if (isMobile) {
+              target.classList.remove('show');
+            } else {
+              target.classList.add('show');
+            }
+          }
+        });
+      }
+      updateCardCollapses();
+      window.addEventListener('resize', updateCardCollapses);
+    });
+  </script>
+  <script>{% block scripts %}
+        const ACKNOWLEDGED_MAINTENANCE_KEY_PREFIX = 'acknowledged_maintenance_';
+        const ACKNOWLEDGED_PATCH_NOTE_KEY_PREFIX = 'acknowledged_patch_note_';
+        const adminUpdatePopupOverlay = document.getElementById('adminUpdatePopupOverlay');
+
+        function showAdminUpdatePopup(title, contentHTML, type, id) {
+            if (!adminUpdatePopupOverlay) return;
+
+            const titleEl = document.getElementById('adminPopupTitle');
+            const bodyEl = document.getElementById('adminPopupBody');
+
+            if (titleEl) titleEl.textContent = title;
+            if (bodyEl) bodyEl.innerHTML = contentHTML;
+
+            adminUpdatePopupOverlay.dataset.messageType = type;
+            adminUpdatePopupOverlay.dataset.messageId = id;
+            adminUpdatePopupOverlay.classList.add('visible');
+        }
+
+        function hideAdminUpdatePopup(acknowledged = false) {
+            if (!adminUpdatePopupOverlay) return;
+
+            const type = adminUpdatePopupOverlay.dataset.messageType;
+            const id = adminUpdatePopupOverlay.dataset.messageId;
+
+            if (acknowledged && type && id) {
+                let storageKeyPrefix = '';
+                if (type === 'maintenance') {
+                    storageKeyPrefix = ACKNOWLEDGED_MAINTENANCE_KEY_PREFIX;
+                } else if (type === 'patch_note') {
+                    storageKeyPrefix = ACKNOWLEDGED_PATCH_NOTE_KEY_PREFIX;
+                }
+                if (storageKeyPrefix) {
+                    localStorage.setItem(storageKeyPrefix + id, 'true');
+                }
+            }
+
+            adminUpdatePopupOverlay.classList.remove('visible');
+            adminUpdatePopupOverlay.dataset.messageType = '';
+            adminUpdatePopupOverlay.dataset.messageId = '';
+
+            if (type === 'maintenance') {
+                // Directly call processPatchNotePopup after maintenance is handled.
+                // Pass null to indicate it needs to fetch.
+                processPatchNotePopup(null);
+            }
+        }
+
+        function processMaintenancePopup(maintenanceData) {
+            if (!maintenanceData || !maintenanceData.id) {
+                // If no maintenance data or ID, proceed to check for patch notes.
+                processPatchNotePopup(null); // Pass null to fetch patch notes
+                return;
+            }
+
+            const storageKey = ACKNOWLEDGED_MAINTENANCE_KEY_PREFIX + maintenanceData.id;
+            if (!localStorage.getItem(storageKey)) {
+                const title = `Maintenance Notice: ${maintenanceData.title || 'System Maintenance'}`;
+                const body = maintenanceData.description || maintenanceData.content || 'Details for maintenance.';
+                showAdminUpdatePopup(title, body, 'maintenance', maintenanceData.id);
+            } else {
+                // If maintenance acknowledged, proceed to check for patch notes.
+                processPatchNotePopup(null); // Pass null to fetch patch notes
+            }
+        }
+
+        function processPatchNotePopup(patchNoteData) {
+            // If patchNoteData is explicitly passed (e.g., from a chained fetch if we implement that later), use it.
+            // Otherwise, fetch it.
+            if (patchNoteData === undefined || patchNoteData === null) {
+                fetch('/api/patch-notes/latest')
+                    .then(response => {
+                        if (!response.ok) {
+                            if (response.status === 404) { // No patch notes found is not an error
+                                console.info('No patch notes found.');
+                                return null;
+                            }
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        // Call this function again with the fetched data.
+                        // This recursive call (or rather, re-invocation) ensures the logic below is executed.
+                        processPatchNotePopup(data);
+                    })
+                    .catch(error => {
+                        console.error('Error fetching latest patch note:', error);
+                        // Even if patch notes fail, the app should continue.
+                    });
+                return; // Important: exit here to wait for the fetch to complete.
+            }
+
+            // patchNoteData is now either the fetched data or null (if 404 or initial empty call resolved)
+            if (!patchNoteData || !patchNoteData.id) {
+                // No patch notes to show (either none exist, or fetch returned empty)
+                return;
+            }
+
+            const storageKey = ACKNOWLEDGED_PATCH_NOTE_KEY_PREFIX + patchNoteData.id;
+            if (!localStorage.getItem(storageKey)) {
+                const title = `Patch Update: ${patchNoteData.title || 'Recent Update'}`;
+                const body = patchNoteData.notes || patchNoteData.description || 'Details of the patch.';
+                showAdminUpdatePopup(title, body, 'patch_note', patchNoteData.id);
+            }
+        }
+
+        function handleAdminNotifications() {
+            fetch('/api/system-maintenance/latest')
+                .then(response => {
+                    if (!response.ok) {
+                        if (response.status === 404) { // No maintenance found is not an error
+                            console.info('No system maintenance found.');
+                            return null; // Explicitly return null to signal no data
+                        }
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    // Check if content type is JSON before parsing
+                    const contentType = response.headers.get("content-type");
+                    if (contentType && contentType.indexOf("application/json") !== -1) {
+                        return response.json();
+                    } else {
+                        // If not JSON, it might be an empty response for 204 or a non-JSON error page
+                        // For 204 (No Content), which can be valid if no maintenance, treat as null
+                        if (response.status === 204) return null;
+                        // Otherwise, it's an unexpected response type
+                        console.warn('Received non-JSON response for system maintenance.');
+                        return null; // Treat as no data to avoid breaking JSON parsing
+                    }
+                })
+                .then(maintenanceData => {
+                    // maintenanceData could be null if 404, 204, or non-JSON
+                    processMaintenancePopup(maintenanceData);
+                })
+                .catch(error => {
+                    console.error('Error fetching latest system maintenance:', error);
+                    // If fetching maintenance fails, still try to process patch notes.
+                    processPatchNotePopup(null); // Pass null to fetch patch notes
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Existing sidebar and UI functionality should remain here if it was here before.
+            // The example showAdminUpdatePopup call is removed.
+            handleAdminNotifications();
+        });
+    {% endblock %}</script>
+</body>
+</html>
