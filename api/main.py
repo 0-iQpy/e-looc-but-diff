@@ -17,6 +17,7 @@ from dotenv import load_dotenv
 from supabase import create_client, Client
 import time
 import traceback
+from waitress import serve
 
 # Load environment variables from .env file
 load_dotenv()
@@ -890,7 +891,11 @@ def google_form_notification():
         app.logger.error(traceback.format_exc())
         return jsonify({"error": "An unexpected error occurred on the server"}), 500
 
+mode = "prod"
 
 if __name__ == "__main__":
+    if mode == "dev":
+        app.run(host="0.0.0.0", debug=True)
     # Use 0.0.0.0 to be reachable in local network, change debug to False in production
-    app.run()
+    else:
+        serve(app, host="0.0.0.0", port="5000", threads=10)
